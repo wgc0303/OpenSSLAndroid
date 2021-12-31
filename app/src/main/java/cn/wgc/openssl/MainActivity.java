@@ -7,6 +7,7 @@ import android.util.Base64;
 import android.util.Log;
 import android.widget.TextView;
 
+import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
 import org.bouncycastle.crypto.params.ECPublicKeyParameters;
 import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
@@ -56,7 +57,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         tv = findViewById(R.id.sample_text);
-        //演示RSA密钥对打印 N D  E
+        //演示打印SM2密钥信息
+        //printSM2KeyData();
+        // 演示RSA密钥对打印 N D  E
         //printRSAKeyData();
         findViewById(R.id.btnCrypt).setOnClickListener(v -> {
             singleService.submit(() -> {
@@ -272,6 +275,30 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+    }
+
+
+    private void printSM2KeyData() {
+        try {
+            AsymmetricCipherKeyPair keyPair = SM2Util.generateKeyPairParameter();
+            ECPrivateKeyParameters priKey = (ECPrivateKeyParameters) keyPair.getPrivate();
+            ECPublicKeyParameters pubKey = (ECPublicKeyParameters) keyPair.getPublic();
+
+            System.out.println("Pri Hex:"
+                    + ByteUtils.toHexString(priKey.getD().toByteArray()).toUpperCase());
+            TestUtil.printHexString2Array(ByteUtils.toHexString(priKey.getD().toByteArray()).toUpperCase());
+            System.out.println("Pub X Hex:"
+                    + ByteUtils.toHexString(pubKey.getQ().getAffineXCoord().getEncoded()).toUpperCase());
+            TestUtil.printHexString2Array(ByteUtils.toHexString(pubKey.getQ().getAffineXCoord().getEncoded()).toUpperCase());
+            System.out.println("Pub X Hex:"
+                    + ByteUtils.toHexString(pubKey.getQ().getAffineYCoord().getEncoded()).toUpperCase());
+            TestUtil.printHexString2Array(ByteUtils.toHexString(pubKey.getQ().getAffineYCoord().getEncoded()).toUpperCase());
+            System.out.println("Pub Point Hex:"
+                    + ByteUtils.toHexString(pubKey.getQ().getEncoded(false)).toUpperCase());
+            TestUtil.printHexString2Array(ByteUtils.toHexString(pubKey.getQ().getEncoded(false)).toUpperCase());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 

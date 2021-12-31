@@ -19,10 +19,36 @@
 #include "openssl/types.h"
 #include "openssl/bn.h"
 #include <empty.h>
+#include <openssl/pem.h>
 #include "openssl/param_build.h"
 #include "LogUtils.h"
 #include "openssl/core_names.h"
 #include "CommonUtils.h"
+
+
+const char *rsa_public_key = "-----BEGIN PUBLIC KEY-----\n"
+                     "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCq7pL6rR9L+l0WTuwEiiKn8cAv\n"
+                     "ihWoIZCuU5yiH8GgXoJlsrmJyi736l0fQnv69MLsKwImalp/F0u+o9hw9HiY+72q\n"
+                     "kpjGZpwZYDYU509V4dv4IpyITWecAx1ELZHscV+BZ5HEZ73v4DESvJjzZ5rY7pN6\n"
+                     "cs4rbOPbnnaPpFFZzwIDAQAB\n"
+                     "-----END PUBLIC KEY-----";
+
+const char *rsa_private_key = "-----BEGIN PRIVATE KEY-----\n"
+                     "MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBAKrukvqtH0v6XRZO\n"
+                     "7ASKIqfxwC+KFaghkK5TnKIfwaBegmWyuYnKLvfqXR9Ce/r0wuwrAiZqWn8XS76j\n"
+                     "2HD0eJj7vaqSmMZmnBlgNhTnT1Xh2/ginIhNZ5wDHUQtkexxX4FnkcRnve/gMRK8\n"
+                     "mPNnmtjuk3pyzits49uedo+kUVnPAgMBAAECgYBP9x+MpVwcW8qbqp1QvFzdK8RI\n"
+                     "mTVrfBRm8Ze34tpfD4e6UwPouc0CT0J0YtKEg2gDO1WcqimfBkN5ssYJhd06lEBq\n"
+                     "NYxhbJ0esj2g5PFrS399lvnDRE/OBoH0ZhPGZBcmH+Jotf5U6vJtWobHY5V3Ja1n\n"
+                     "uv1xBtdtg2GNKpiY+QJBAOLaGS/NPV2R53/qOlsFmNofdTt6RCL0tdPSTL9TigoI\n"
+                     "5eJDBPTJJx5oXpSqJL8NDLLtfmfJX4jThBxHlqVqsqcCQQDA5RVvDDAW4AJYoW3w\n"
+                     "C10TROqvzAPlnvqfVI+q7az7F2oivPsWkMeYEd7NiGomLF/0wRBKyNhL2QeqVkdg\n"
+                     "xUyZAkB5Fn23PFBzL7xoVPiNOXGbjIshEmRoXELqLCj3P3pBXPqIScnNd8m/u2ow\n"
+                     "5Jj0udx7bbW5ZI3wFSdBiRzqcwelAkEAh8Y4Cgw4JUHUJPKr4ZT+FLwjvU4LSCtZ\n"
+                     "GaF55sSZR7w5du4yhrWt6Dpb66wjm28Ms8jZYOpyZSEEpj9IyrLVsQJBALSmIa7f\n"
+                     "FTsMManISpWMHlsVe1FeizoF6wJ6zf7Kx3xyVLjVmrEQe7u9KcsGMcOH2cWS6Pqu\n"
+                     "D8us4Og80LJgOv4=\n"
+                     "-----END PRIVATE KEY-----";
 
 /**
  * rsa 私有幂
@@ -65,9 +91,14 @@ const unsigned char rsa_n[] = {0x00, 0xaa, 0xee, 0x92, 0xfa, 0xad, 0x1f, 0x4b,
 const unsigned char rsa_e[] = {0x01, 0x00, 0x01};
 
 std::string rsaPublicKeyEncrypt(unsigned char content[]) {
+    //以下两种方式都可以将RSA密钥导入EVP_PKEY
 
     EVP_PKEY_CTX *ctx;
     EVP_PKEY *pkey = null;
+
+    /**
+    * 方式一
+    */
     OSSL_PARAM_BLD *param_bld;
     OSSL_PARAM *params;
     BIGNUM *n;
@@ -96,6 +127,12 @@ std::string rsaPublicKeyEncrypt(unsigned char content[]) {
         return null;
     }
 
+    /**
+     * 方式二
+     */
+    /*BIO *bo= BIO_new_mem_buf(rsa_public_key, -1);
+    PEM_read_bio_PUBKEY(bo,&pkey,0,null);
+    BIO_free_all(bo);*/
 
     ctx = EVP_PKEY_CTX_new(pkey, null);
     if (!ctx || !pkey) {
@@ -166,9 +203,13 @@ std::string rsaPublicKeyEncrypt(unsigned char content[]) {
 }
 
 std::string rsaPrivateKeyDecrypt(const unsigned char *enData, size_t enLen) {
-
+    //以下两种方式都可以将RSA密钥导入EVP_PKEY
     EVP_PKEY_CTX *ctx;
     EVP_PKEY *pkey = null;
+
+    /**
+    * 方式一
+    */
     OSSL_PARAM_BLD *param_bld;
     OSSL_PARAM *params;
     BIGNUM *d;
@@ -199,6 +240,13 @@ std::string rsaPrivateKeyDecrypt(const unsigned char *enData, size_t enLen) {
         LOGD("导入失败");
         return null;
     }
+
+    /**
+     * 方式二
+     */
+    /*BIO *bo = BIO_new_mem_buf(rsa_private_key, -1);
+    PEM_read_bio_PrivateKey(bo, &pkey, 0, null);
+    BIO_free_all(bo);*/
 
     ctx = EVP_PKEY_CTX_new(pkey, null);
     if (!ctx || !pkey) {

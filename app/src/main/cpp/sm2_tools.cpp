@@ -21,6 +21,7 @@
 #include <string.h>
 #include <openssl/core_names.h>
 #include <openssl/param_build.h>
+#include <openssl/pem.h>
 
 //SM2签名ID
 #define SIGN_ID "123"
@@ -32,8 +33,8 @@ const unsigned char private_key_data[] = {
         0x66, 0xe0, 0x1f, 0x3d, 0xad, 0x2c, 0x7f, 0x71,
         0xbb, 0xc9, 0x50, 0xbb, 0x6a, 0x03, 0x56, 0x4d
 };
-
-//sm2 公钥数据 由x,y两组数据构成，前面加04表示未压缩
+/**********************sm2公钥多种表现形式*********************/
+//sm2 公钥数据形式一： 由x,y两组数据构成，前面加04表示未压缩
 const unsigned char public_key_data[] = {
         POINT_CONVERSION_UNCOMPRESSED,
         //x
@@ -48,6 +49,16 @@ const unsigned char public_key_data[] = {
         0x93, 0xad, 0x34, 0x96, 0x7c, 0xf8, 0xd5, 0x5f
 };
 
+//sm2 公钥数据形式二：压缩形式的公钥，由x计算出Y
+const unsigned char public_key_compress_data[] = {
+        0x03,
+        //x
+        0x86, 0xae, 0x5f, 0x84, 0xc2, 0x8c, 0x2f, 0x23,
+        0x76, 0x7f, 0xef, 0x3d, 0x06, 0xc0, 0x00, 0xd3,
+        0xa7, 0x8f, 0x45, 0x66, 0x19, 0xd6, 0xda, 0xb8,
+        0x22, 0x31, 0xcd, 0xd9, 0x73, 0x38, 0x94, 0xae};
+
+//sm2 公钥数据形式三：
 //sm2 公钥数据 由x数据构成
 const unsigned char public_key_x[] = {
         0x86, 0xae, 0x5f, 0x84, 0xc2, 0x8c, 0x2f, 0x23,
@@ -61,6 +72,24 @@ const unsigned char public_key_y[] = {
         0xe0, 0x89, 0x21, 0x87, 0x97, 0xf9, 0xc7, 0x62,
         0x49, 0x81, 0x88, 0x00, 0x66, 0x5e, 0xea, 0x20,
         0x93, 0xad, 0x34, 0x96, 0x7c, 0xf8, 0xd5, 0x5f};
+/**********************sm2公钥多种表现形式*********************/
+
+
+/**********************pem格式公私钥*********************/
+
+const char *public_pem = "-----BEGIN PUBLIC KEY-----\n"
+                         "MFowFAYIKoEcz1UBgi0GCCqBHM9VAYItA0IABIauX4TCjC8jdn/vPQbAANOnj0Vm\n"
+                         "GdbauCIxzdlzOJSuk9SrkywWBTngiSGHl/nHYkmBiABmXuogk600lnz41V8=\n"
+                         "-----END PUBLIC KEY-----";
+
+const char *private_pem = "-----BEGIN PRIVATE KEY-----\n"
+                          "MIGIAgEAMBQGCCqBHM9VAYItBggqgRzPVQGCLQRtMGsCAQEEIHBpi6NXbTBhwQbo\n"
+                          "JWjXX9hm4B89rSx/cbvJULtqA1ZNoUQDQgAEhq5fhMKMLyN2f+89BsAA06ePRWYZ\n"
+                          "1tq4IjHN2XM4lK6T1KuTLBYFOeCJIYeX+cdiSYGIAGZe6iCTrTSWfPjVXw==\n"
+                          "-----END PRIVATE KEY-----";
+
+/**********************pem格式公私钥*********************/
+
 
 /**
  *
@@ -75,6 +104,7 @@ std::string sm2encrypt2hexString(unsigned char content[]) {
     OSSL_PARAM *params = null;
     param_bld = OSSL_PARAM_BLD_new();
     //上面的这种方式和下面的方式是一样的,二选一
+    //方式一，可用未压缩和压缩后的公钥数据
     if (param_bld
         && OSSL_PARAM_BLD_push_utf8_string(param_bld, OSSL_PKEY_PARAM_GROUP_NAME,
                                            OSSL_EC_curve_nid2name(NID_sm2), 0)
@@ -82,6 +112,7 @@ std::string sm2encrypt2hexString(unsigned char content[]) {
                                             sizeof(public_key_data))) {
         params = OSSL_PARAM_BLD_to_param(param_bld);
     }
+        //方式二分别使用X，Y两组数据
         /*if ( param_bld
             && OSSL_PARAM_BLD_push_utf8_string(param_bld, OSSL_PKEY_PARAM_GROUP_NAME, OSSL_EC_curve_nid2name(NID_sm2), 0)
             && OSSL_PARAM_BLD_push_octet_string(param_bld, OSSL_PKEY_PARAM_EC_PUB_X, public_key_x, sizeof(public_key_x))
@@ -229,7 +260,53 @@ std::string sm2decryptBuf2HexString(const unsigned char *enData, size_t enLen) {
     return textHex;
 }
 
+//读取PEM私钥字符串进行签名
 std::string sm2Sign2ASN1HexString(unsigned char data[]) {
+
+    EVP_PKEY_CTX *ctx;
+    EVP_PKEY *evpKey = null;
+
+    BIO *priBio = BIO_new_mem_buf(private_pem, -1);
+    PEM_read_bio_PrivateKey(priBio, &evpKey, 0, null);
+    BIO_free_all(priBio);
+
+    ctx = EVP_PKEY_CTX_new(evpKey, null);
+
+    if (!ctx || !evpKey) {
+        LOGD("  创建失败");
+        return null;
+    }
+
+    size_t data_size = strlen(reinterpret_cast<const char *const>(data));
+    size_t idLen = strlen(SIGN_ID);
+
+    unsigned char sign[100];
+    size_t signLen = sizeof(sign);
+
+    EVP_MD_CTX *mctx = EVP_MD_CTX_new();
+    EVP_MD_CTX_set_pkey_ctx(mctx, ctx);
+
+
+    if (EVP_PKEY_CTX_set1_id(ctx, SIGN_ID, idLen) <= 0
+        || EVP_DigestSignInit(mctx, null, EVP_sm3(), null, evpKey) <= 0
+        || EVP_DigestSignUpdate(mctx, data, data_size) <= 0
+        || EVP_DigestSignFinal(mctx, sign, &signLen) <= 0) {
+        return null;
+    }
+
+    //释放资源
+    EVP_MD_CTX_free(mctx);
+    EVP_PKEY_free(evpKey);
+    EVP_PKEY_CTX_free(ctx);
+    CRYPTO_cleanup_all_ex_data();
+
+    std::string signHex = arr2hex(sign, signLen);
+
+    return signHex;
+
+}
+
+/*std::string sm2Sign2ASN1HexString(unsigned char data[]) {
 
     EVP_PKEY_CTX *ctx;
     EVP_PKEY *evpKey = null;
@@ -238,7 +315,7 @@ std::string sm2Sign2ASN1HexString(unsigned char data[]) {
     OSSL_PARAM *params;
     privateBN = BN_bin2bn(private_key_data, sizeof(private_key_data), null);
     param_bld = OSSL_PARAM_BLD_new();
-    //签名需要同时导入公私钥数据
+    //如果不是PEM格式的密钥，签名需要同时导入公私钥数据
     if (param_bld
         && OSSL_PARAM_BLD_push_utf8_string(param_bld, OSSL_PKEY_PARAM_GROUP_NAME,
                                            OSSL_EC_curve_nid2name(NID_sm2), 0)
@@ -262,7 +339,6 @@ std::string sm2Sign2ASN1HexString(unsigned char data[]) {
         LOGD("导入失败");
         return null;
     }
-
 
     ctx = EVP_PKEY_CTX_new(evpKey, null);
 
@@ -301,38 +377,17 @@ std::string sm2Sign2ASN1HexString(unsigned char data[]) {
 
     return signHex;
 
-}
+}*/
 
 bool sm2VerifyASN1Data(unsigned char data[], unsigned char sign[], size_t signLen) {
 
     EVP_PKEY_CTX *ctx;
     EVP_PKEY *evpKey = null;
-    OSSL_PARAM_BLD *param_bld;
-    OSSL_PARAM *params;
-    param_bld = OSSL_PARAM_BLD_new();
-    if (param_bld
-        && OSSL_PARAM_BLD_push_utf8_string(param_bld, OSSL_PKEY_PARAM_GROUP_NAME,
-                                           OSSL_EC_curve_nid2name(NID_sm2), 0)
-        && OSSL_PARAM_BLD_push_octet_string(param_bld, OSSL_PKEY_PARAM_PUB_KEY, public_key_data,
-                                            sizeof(public_key_data))) {
-        params = OSSL_PARAM_BLD_to_param(param_bld);
-    } else {
-        LOGD("参数添加失败");
-        return false;
-    }
 
-
-    //下面这两种方式都行
-    ctx = EVP_PKEY_CTX_new_id(NID_sm2, null);
-//    ctx = EVP_PKEY_CTX_new_from_name(null, "SM2", null);
-    if (!ctx
-        || !params
-        || EVP_PKEY_fromdata_init(ctx) <= 0
-        || EVP_PKEY_fromdata(ctx, &evpKey, EVP_PKEY_KEYPAIR, params) <= 0) {
-        LOGD("导入失败");
-        return false;
-    }
-
+    //读取pem公钥字符数据到EVP_PKEY
+    BIO *pubBio = BIO_new_mem_buf(public_pem, -1);
+    PEM_read_bio_PUBKEY(pubBio, &evpKey, 0, null);
+    BIO_free_all(pubBio);
 
     ctx = EVP_PKEY_CTX_new(evpKey, null);
 
@@ -358,13 +413,44 @@ bool sm2VerifyASN1Data(unsigned char data[], unsigned char sign[], size_t signLe
     EVP_MD_CTX_free(mctx);
     EVP_PKEY_free(evpKey);
     EVP_PKEY_CTX_free(ctx);
-    OSSL_PARAM_free(params);
-    OSSL_PARAM_BLD_free(param_bld);
     CRYPTO_cleanup_all_ex_data();
 
     return verify == 1;
 
 }
+
+
+void generateKeyPair() {
+
+    EVP_PKEY *evpKey = EVP_EC_gen("SM2");
+    unsigned char pub[256];
+    size_t pubLen = 0;
+    EVP_PKEY_get_octet_string_param(evpKey, OSSL_PKEY_PARAM_PUB_KEY, pub, sizeof(pub), &pubLen);
+    std::string pubKey = arr2hex(pub, pubLen);
+    LOGD("sm2 压缩公钥\n%s", pubKey.c_str());
+
+    BIGNUM *bnPri = NULL;
+    EVP_PKEY_get_bn_param(evpKey, OSSL_PKEY_PARAM_PRIV_KEY, &bnPri);
+    char *priHex = BN_bn2hex(bnPri);
+    LOGD("sm2 私钥\n%s", priHex);
+
+    BIO *pubBio = BIO_new(BIO_s_mem());
+    PEM_write_bio_PUBKEY(pubBio, evpKey);
+    char *pubPem = bio2Char(pubBio);
+    LOGD("sm2 pem公钥\n%s", pubPem);
+
+    BIO *priBio = BIO_new(BIO_s_mem());
+    PEM_write_bio_PrivateKey(priBio, evpKey, null, null, 0, null, null);
+    char *priPem = bio2Char(priBio);
+    LOGD("sm2 pem私钥\n%s", priPem);
+
+    BIO_free_all(pubBio);
+    BIO_free_all(priBio);
+    BN_free(bnPri);
+    EVP_PKEY_free(evpKey);
+}
+
+
 
 
 

@@ -9,6 +9,11 @@
 #include <empty.h>
 #include <openssl/cmac.h>
 
+extern "C" JNIEXPORT void JNICALL
+Java_cn_wgc_openssl_MainActivity_jniGenerateSm2KeyPair(JNIEnv *env, jobject /* this */) {
+    generateKeyPair();
+}
+
 extern "C" JNIEXPORT jstring JNICALL
 Java_cn_wgc_openssl_MainActivity_jniSm2Encrypt2ASN1HexString(
         JNIEnv *env,

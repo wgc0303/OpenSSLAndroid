@@ -12,6 +12,7 @@ import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
 import org.bouncycastle.crypto.params.ECPublicKeyParameters;
 import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.interfaces.RSAPrivateKey;
@@ -61,22 +62,26 @@ public class MainActivity extends AppCompatActivity {
         //printSM2KeyData();
         // 演示RSA密钥对打印 N D  E
         //printRSAKeyData();
-        findViewById(R.id.btnCrypt).setOnClickListener(v -> {
-            singleService.submit(() -> {
-                jniEncAndJavaDec();
-                javaEncAndJniDec();
-                jniSignAndJavaVerify();
-                javaSignAndJniVerify();
-                compareJniAndJavaSM3Digest();
-                sm4JavaEncAndJniDec();
-                sm4JniEncAndJavaDec();
-                rsaJniEncAndJavaDec();
-                rsaJavaEncAndJniDec();
-                rsaJniSignAndJavaVerify();
-                rsaJavaSignAndJniVerify();
-            });
-        });
+        findViewById(R.id.btnCrypt).setOnClickListener(v ->
+                singleService.submit(() -> {
+                    jniEncAndJavaDec();
+                    javaEncAndJniDec();
+                    jniSignAndJavaVerify();
+                    javaSignAndJniVerify();
+                    compareJniAndJavaSM3Digest();
+                    sm4JavaEncAndJniDec();
+                    sm4JniEncAndJavaDec();
+                    rsaJniEncAndJavaDec();
+                    rsaJavaEncAndJniDec();
+                    rsaJniSignAndJavaVerify();
+                    rsaJavaSignAndJniVerify();
+                }));
+
+        findViewById(R.id.generateSm2KeyPair).setOnClickListener(v -> jniGenerateSm2KeyPair());
+
     }
+
+    public synchronized native void jniGenerateSm2KeyPair();
 
     public synchronized native String jniSm2Encrypt2ASN1HexString(byte[] content);
 
@@ -299,6 +304,20 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        String pemSm2Pub = "-----BEGIN PUBLIC KEY-----\n" +
+                "MFowFAYIKoEcz1UBgi0GCCqBHM9VAYItA0IABIauX4TCjC8jdn/vPQbAANOnj0Vm\n" +
+                "GdbauCIxzdlzOJSuk9SrkywWBTngiSGHl/nHYkmBiABmXuogk600lnz41V8=\n" +
+                "-----END PUBLIC KEY-----";
+        try {
+            byte[] keyPEMToPKCS8 = BCECUtil.convertECPublicKeyPEMToX509(pemSm2Pub);
+            TestUtil.printHexString2Array(ByteUtils.toHexString(keyPEMToPKCS8));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+//        String pemSm2Pub = "MFowFAYIKoEcz1UBgi0GCCqBHM9VAYItA0IABIauX4TCjC8jdn/vPQbAANOnj0VmGdbauCIxzdlzOJSuk9SrkywWBTngiSGHl/nHYkmBiABmXuogk600lnz41V8=";
+//        byte[] sm2Pub = Base64.decode(pemSm2Pub, Base64.NO_WRAP);
+//        TestUtil.printHexString2Array(ByteUtils.toHexString(sm2Pub));
     }
 
 

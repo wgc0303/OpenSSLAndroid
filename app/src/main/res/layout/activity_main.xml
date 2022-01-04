@@ -14,6 +14,14 @@
         android:layout_marginTop="30dp"
         android:background="@color/teal_200"
         android:text="加解密" />
+    <Button
+        android:id="@+id/generateSm2KeyPair"
+        android:layout_width="150dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="30dp"
+        android:background="@color/teal_200"
+        android:text="jni生成SM2密钥" />
 
     <ScrollView
         android:layout_width="match_parent"

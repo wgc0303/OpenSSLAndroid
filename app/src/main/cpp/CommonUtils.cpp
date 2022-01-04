@@ -15,6 +15,9 @@
 #include <CommonUtils.h>
 #include <string.h>
 #include <empty.h>
+#include <openssl/types.h>
+#include <openssl/bio.h>
+#include <openssl/buffer.h>
 
 /**
  * jbyteArray转char
@@ -49,5 +52,17 @@ std::string arr2hex(const unsigned char *arr, size_t len) {
     }
 
     return res;
+}
+
+char *bio2Char(BIO *bio) {
+    BUF_MEM *mem;
+    BIO_flush(bio);
+    BIO_get_mem_ptr(bio, &mem);
+    BIO_set_close(bio, BIO_NOCLOSE);
+    char *buff = (char *) malloc(mem->length + 1);
+    memcpy(buff, mem->data, mem->length);
+    buff[mem->length] = '\0';
+    BUF_MEM_free(mem);
+    return buff;
 }
 

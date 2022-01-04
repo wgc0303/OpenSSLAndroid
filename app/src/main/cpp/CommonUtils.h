@@ -11,6 +11,7 @@
 
 #include <string>
 #include <jni.h>
+#include <openssl/types.h>
 
 #ifndef COMMON_UTILS_JNI_H
 #define COMMON_UTILS_JNI_H
@@ -24,6 +25,7 @@ char *convertJByteArrayToChars(JNIEnv *env, jbyteArray byteArray);
 
 std::string arr2hex(const unsigned char *arr, size_t len);
 
+char *bio2Char(BIO *bio);
 
 #ifdef  __cplusplus
 }

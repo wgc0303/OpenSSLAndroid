@@ -24,5 +24,7 @@ std::string sm2Sign2ASN1HexString(unsigned char data[]);
 
 bool sm2VerifyASN1Data(unsigned char data[], unsigned char sign[], size_t signLen);
 
+void generateKeyPair();
+
 
 #endif //OPENSSL_ANDROID_SM2_TOOLS_H

@@ -8,6 +8,7 @@ import android.util.Log;
 import android.widget.TextView;
 
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
+import org.bouncycastle.crypto.engines.SM2Engine;
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
 import org.bouncycastle.crypto.params.ECPublicKeyParameters;
 import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
@@ -59,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         tv = findViewById(R.id.sample_text);
         //演示打印SM2密钥信息
-        //printSM2KeyData();
+        printSM2KeyData();
         // 演示RSA密钥对打印 N D  E
         //printRSAKeyData();
         findViewById(R.id.btnCrypt).setOnClickListener(v ->
@@ -112,9 +113,9 @@ public class MainActivity extends AppCompatActivity {
             ECPublicKeyParameters pubKey = BCECUtil.createECPublicKeyParameters(xHex, yHex, SM2Util.CURVE, SM2Util.DOMAIN_PARAMS);
 
             long l0 = System.currentTimeMillis();
-            byte[] encryptedData = SM2Util.encrypt(pubKey, content.getBytes());
+            byte[] encryptedData = SM2Util.encrypt(SM2Engine.Mode.C1C2C3, pubKey, content.getBytes());
             Log.d("wgc", "java sm2 加密耗时" + (System.currentTimeMillis() - l0));
-            byte[] encASN1Data = SM2Util.encodeSM2CipherToDER(encryptedData);
+            byte[] encASN1Data = SM2Util.c1c2c3Convert2c1c3c2Der(encryptedData);
             long l = System.currentTimeMillis();
             String decryptContentHex = jniSm2DecryptASN12HexString(encASN1Data);
             Log.d("wgc", "jni sm2 解密耗时" + (System.currentTimeMillis() - l));
@@ -133,13 +134,14 @@ public class MainActivity extends AppCompatActivity {
             String jniEecASN1HexString = jniSm2Encrypt2ASN1HexString(content.getBytes());
             Log.d("wgc", "jni sm2 加密耗时" + (System.currentTimeMillis() - l0));
             byte[] encASN1HexBytes = ByteUtils.fromHexString(jniEecASN1HexString);
-            byte[] encData = SM2Util.decodeDERSM2Cipher(encASN1HexBytes);
+
+            byte[] encData =  SM2Util.c1c3c2DerConvert2c1c2c3(encASN1HexBytes);
 
             ECPrivateKeyParameters priKey = new ECPrivateKeyParameters(
                     new BigInteger(ByteUtils.fromHexString(priHex)), SM2Util.DOMAIN_PARAMS);
 
             long l1 = System.currentTimeMillis();
-            byte[] decryptData = SM2Util.decrypt(priKey, encData);
+            byte[] decryptData = SM2Util.decrypt(SM2Engine.Mode.C1C2C3,priKey, encData);
             Log.d("wgc", "java sm2 解密耗时" + (System.currentTimeMillis() - l1));
             String result = new String(decryptData);
             Log.d("wgc", "解密前后数据是否一致：     " + (result.equals(content)));

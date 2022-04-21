@@ -603,4 +603,68 @@ public class SM2Util extends GMBaseUtil {
         }
         return result;
     }
+
+
+    public static byte[] c1c2c3Convert2c1c3c2Der(byte[] cipher) throws Exception {
+        int curveLength = BCECUtil.getCurveLength(DOMAIN_PARAMS);
+        return c1c2c3Convert2c1c3c2Der(curveLength, SM3_DIGEST_LENGTH, cipher);
+    }
+
+    public static byte[] c1c2c3Convert2c1c3c2Der(int curveLength, int digestLength, byte[] cipher)
+            throws Exception {
+
+        byte[] c1x = new byte[curveLength];
+        byte[] c1y = new byte[curveLength];
+        byte[] c2 = new byte[cipher.length - c1x.length - c1y.length - 1 - digestLength];
+        byte[] c3 = new byte[digestLength];
+
+        int startPos = 1;
+        System.arraycopy(cipher, startPos, c1x, 0, c1x.length);
+        startPos += c1x.length;
+        System.arraycopy(cipher, startPos, c1y, 0, c1y.length);
+        startPos += c1y.length;
+        System.arraycopy(cipher, startPos, c2, 0, c2.length);
+        startPos += c2.length;
+        System.arraycopy(cipher, startPos, c3, 0, c3.length);
+
+
+        ASN1Encodable[] arr = new ASN1Encodable[4];
+        // c1x,c1y的第一个bit可能为1，这个时候要确保他们表示的大数一定是正数，所以new BigInteger符号强制设为正。
+        arr[0] = new ASN1Integer(new BigInteger(1, c1x));
+        arr[1] = new ASN1Integer(new BigInteger(1, c1y));
+
+        arr[2] = new DEROctetString(c3);
+        arr[3] = new DEROctetString(c2);
+
+        DERSequence ds = new DERSequence(arr);
+        return ds.getEncoded(ASN1Encoding.DER);
+    }
+
+
+    public static byte[] c1c3c2DerConvert2c1c2c3(byte[] derCipher) throws Exception {
+        ASN1Sequence as = DERSequence.getInstance(derCipher);
+        byte[] c1x = ((ASN1Integer) as.getObjectAt(0)).getValue().toByteArray();
+        byte[] c1y = ((ASN1Integer) as.getObjectAt(1)).getValue().toByteArray();
+        // c1x，c1y可能因为大正数的补0规则在第一个有效字节前面插了一个(byte)0，变成33个字节，在这里要修正回32个字节去
+        c1x = fixToCurveLengthBytes(c1x);
+        c1y = fixToCurveLengthBytes(c1y);
+        byte[] c3 = ((DEROctetString) as.getObjectAt(2)).getOctets();
+        byte[] c2 = ((DEROctetString) as.getObjectAt(3)).getOctets();
+
+
+        int pos = 0;
+        byte[] cipherText = new byte[1 + c1x.length + c1y.length + c2.length + c3.length];
+        final byte uncompressedFlag = 0x04;
+        cipherText[0] = uncompressedFlag;
+        pos += 1;
+        System.arraycopy(c1x, 0, cipherText, pos, c1x.length);
+        pos += c1x.length;
+        System.arraycopy(c1y, 0, cipherText, pos, c1y.length);
+        pos += c1y.length;
+        System.arraycopy(c2, 0, cipherText, pos, c2.length);
+        pos += c2.length;
+        System.arraycopy(c3, 0, cipherText, pos, c3.length);
+
+        return cipherText;
+    }
 }

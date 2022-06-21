@@ -66,3 +66,37 @@ char *bio2Char(BIO *bio) {
     return buff;
 }
 
+
+int hexStrToByte(char *str, unsigned char *out, unsigned int *outLen) {
+    char *p = str;
+    char high, low;
+    int cnt = 0;
+    size_t tmpLen = strlen(p);
+    while (cnt < (tmpLen / 2)) {
+        if (*p <= 'F') {
+            high = *p > '9' ? *p - 48 - 7 : *p - 48;
+        } else {
+            high = ((*p > '9') && *p <= 'f') ? *p - 48 - 7 : *p - 48;
+        }
+        if (*p <= 'F') {
+            low = *(++p) > '9' ? *(p) - 48 - 7 : *(p) - 48;
+        } else {
+            low = (*(++p) > '9' && *p <= 'f') ? *(p) - 48 - 7 : *(p) - 48;
+        }
+        out[cnt] = ((high & 0x0f) << 4 | (low & 0x0f));
+        p++;
+        cnt++;
+    }
+    if (tmpLen % 2 != 0) {
+        LOGD("数据有问题");
+        if (*p <= 'F') {
+            out[cnt] = *p > '9' ? *p - 48 - 7 : *p - 48;
+        } else {
+            out[cnt] = ((*p > '9') && *p <= 'f') ? *p - 48 - 7 : *p - 48;
+        }
+    }
+
+    if (outLen != null) *outLen = tmpLen / 2 + tmpLen % 2;
+    return tmpLen / 2 + tmpLen % 2;
+}
+

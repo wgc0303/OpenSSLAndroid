@@ -26,5 +26,9 @@ bool sm2VerifyASN1Data(unsigned char data[], unsigned char sign[], size_t signLe
 
 void generateKeyPair();
 
+void privatePemKeyGenPublicKey(char *priKey);
+
+void priKeyHexGenPubKeyHex(char *priHex);
+
 
 #endif //OPENSSL_ANDROID_SM2_TOOLS_H

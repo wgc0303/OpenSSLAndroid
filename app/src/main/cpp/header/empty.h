@@ -17,4 +17,7 @@
 #define null  nullptr
 //#define null  NULL
 
+
+#define string_empty  ""
+
 #endif //OPENSSL_ANDROID_EMPTY_H

@@ -10,11 +10,11 @@
  */
 
 
-#include <LogUtils.h>
+#include <header/LogUtils.h>
 #include <jni.h>
-#include <CommonUtils.h>
+#include <header/CommonUtils.h>
 #include <string.h>
-#include <empty.h>
+#include <header/empty.h>
 #include <openssl/types.h>
 #include <openssl/bio.h>
 #include <openssl/buffer.h>

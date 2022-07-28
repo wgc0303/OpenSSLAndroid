@@ -15,15 +15,15 @@
 #include <string.h>
 #include <openssl/err.h>
 #include <openssl/sha.h>
-#include "rsa_tools.h"
+#include "header/rsa_crypto.h"
 #include "openssl/types.h"
 #include "openssl/bn.h"
-#include <empty.h>
+#include <header/empty.h>
 #include <openssl/pem.h>
 #include "openssl/param_build.h"
-#include "LogUtils.h"
+#include "header/LogUtils.h"
 #include "openssl/core_names.h"
-#include "CommonUtils.h"
+#include "header/CommonUtils.h"
 
 /**
  * 以下列举了RSA密钥的两种表示形式，该用哪种导入到EVP_PKEY,请自行选择
@@ -120,7 +120,7 @@ std::string rsaPublicKeyEncrypt(unsigned char content[]) {
         params = OSSL_PARAM_BLD_to_param(param_bld);
     } else {
         LOGD("参数添加失败");
-        return null;
+        return string_empty;
     }
 
     ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, null);
@@ -130,19 +130,19 @@ std::string rsaPublicKeyEncrypt(unsigned char content[]) {
         || EVP_PKEY_fromdata_init(ctx) <= 0
         || EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_KEYPAIR, params) <= 0) {
         LOGD("导入失败");
-        return null;
+        return string_empty;
     }
 
     ctx = EVP_PKEY_CTX_new(pkey, null);
     if (!ctx || !pkey) {
         LOGD("  创建失败");
-        return null;
+        return string_empty;
     }
 
     // 加密初始化
     if (EVP_PKEY_encrypt_init(ctx) <= 0) {
         LOGD("  加密初始化失败");
-        return null;
+        return string_empty;
     }
     //设置填充模式，可省略 ，RSA加解密默认 RSA_PKCS1_PADDING
     EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_PADDING);
@@ -184,7 +184,7 @@ std::string rsaPublicKeyEncrypt(unsigned char content[]) {
                                 inputSize) <= 0)   //输入数据大小，块大小
         {
             LOGD("加密过程出错");
-            return null;
+            return string_empty;
         }
         outLen += outSize;
     }
@@ -213,13 +213,13 @@ std::string rsaPrivateKeyDecrypt(const unsigned char *enData, size_t enLen) {
     ctx = EVP_PKEY_CTX_new(pkey, null);
     if (!ctx || !pkey) {
         LOGD("  创建失败");
-        return null;
+        return string_empty;
     }
 
     // 解密初始化
     if (EVP_PKEY_decrypt_init(ctx) <= 0) {
         LOGD("  解密初始化失败");
-        return null;
+        return string_empty;
     }
     //设置填充模式，可省略 ，RSA加解密默认 RSA_PKCS1_PADDING
     EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_PADDING);
@@ -255,7 +255,7 @@ std::string rsaPrivateKeyDecrypt(const unsigned char *enData, size_t enLen) {
                                 inputSize) <= 0)   //输入数据大小，块大小
         {
             LOGD("解密过程出错");
-            return null;
+            return string_empty;
         }
         outLen += outSize;
     }
@@ -291,7 +291,7 @@ std::string rsaPrivateKeySign(unsigned char content[]) {
         params = OSSL_PARAM_BLD_to_param(param_bld);
     } else {
         LOGD("参数添加失败");
-        return null;
+        return string_empty;
     }
 
     ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, null);
@@ -301,14 +301,14 @@ std::string rsaPrivateKeySign(unsigned char content[]) {
         || EVP_PKEY_fromdata_init(ctx) <= 0
         || EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_KEYPAIR, params) <= 0) {
         LOGD("导入失败");
-        return null;
+        return string_empty;
     }
 
 
     ctx = EVP_PKEY_CTX_new(pkey, null);
     if (!ctx || !pkey) {
         LOGD("  创建失败");
-        return null;
+        return string_empty;
     }
 
     size_t contentLen = strlen(reinterpret_cast<const char *const>(content));
@@ -356,7 +356,7 @@ bool rsaPublicVerify(unsigned char content[], unsigned char sign[], size_t signL
     ctx = EVP_PKEY_CTX_new(pkey, null);
     if (!ctx || !pkey) {
         LOGD("  创建失败");
-        return null;
+        return false;
     }
 
     size_t contentLen = strlen(reinterpret_cast<const char *const>(content));

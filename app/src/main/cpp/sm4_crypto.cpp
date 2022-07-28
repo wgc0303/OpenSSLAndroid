@@ -10,10 +10,10 @@
  */
 
 #include "openssl/evp.h"
-#include "sm/sm4_tools.h"
-#include "LogUtils.h"
+#include "header/sm/sm4_crypto.h"
+#include "header/LogUtils.h"
 #include <string.h>
-#include <empty.h>
+#include <header/empty.h>
 
 /**
  * sm4cbc加密

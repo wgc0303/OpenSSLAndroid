@@ -10,14 +10,14 @@
  */
 
 
-#include "sm/sm2_tools.h"
+#include "header/sm/sm2_crypto.h"
 #include <openssl/evp.h>
 #include "openssl/obj_mac.h"
-#include <LogUtils.h>
-#include <CommonUtils.h>
+#include <header/LogUtils.h>
+#include <header/CommonUtils.h>
 #include <openssl/ec.h>
 #include <iostream>
-#include <empty.h>
+#include <header/empty.h>
 #include <string.h>
 #include <openssl/core_names.h>
 #include <openssl/param_build.h>
@@ -123,7 +123,7 @@ std::string sm2encrypt2hexString(unsigned char content[]) {
 
   else {
     LOGD("参数添加失败");
-    return null;
+    return string_empty;
   }
 
   //下面这两种方式都行
@@ -134,20 +134,20 @@ std::string sm2encrypt2hexString(unsigned char content[]) {
       || EVP_PKEY_fromdata_init(ctx) <= 0
       || EVP_PKEY_fromdata(ctx, &evpKey, EVP_PKEY_KEYPAIR, params) <= 0) {
     LOGD("导入失败");
-    return null;
+    return string_empty;
   }
 
   ctx = EVP_PKEY_CTX_new(evpKey, null);
   if (!ctx || !evpKey) {
     LOGD("  创建失败");
-    return null;
+    return string_empty;
   }
 
   //除了sm2 其他的一些算法会失败
   int re = EVP_PKEY_encrypt_init(ctx);
   if (re != 1) {
     LOGD("  初始化失败");
-    return null;
+    return string_empty;
   }
 
   size_t dataSize = strlen(reinterpret_cast<const char *const>(content));
@@ -215,7 +215,7 @@ std::string sm2decryptBuf2HexString(const unsigned char *enData, size_t enLen) {
     params = OSSL_PARAM_BLD_to_param(param_bld);
   } else {
     LOGD("参数添加失败");
-    return null;
+    return string_empty;
   }
 
 
@@ -227,14 +227,14 @@ std::string sm2decryptBuf2HexString(const unsigned char *enData, size_t enLen) {
       || EVP_PKEY_fromdata_init(ctx) <= 0
       || EVP_PKEY_fromdata(ctx, &evpKey, EVP_PKEY_KEYPAIR, params) <= 0) {
     LOGD("导入失败");
-    return null;
+    return string_empty;
   }
 
 
   ctx = EVP_PKEY_CTX_new(evpKey, null);
   if (!ctx || !evpKey) {
     LOGD("  创建失败");
-    return null;
+    return string_empty;
   }
 
 
@@ -274,7 +274,7 @@ std::string sm2Sign2ASN1HexString(unsigned char data[]) {
 
   if (!ctx || !evpKey) {
     LOGD("  创建失败");
-    return null;
+    return string_empty;
   }
 
   size_t data_size = strlen(reinterpret_cast<const char *const>(data));
@@ -291,7 +291,7 @@ std::string sm2Sign2ASN1HexString(unsigned char data[]) {
       || EVP_DigestSignInit(mctx, null, EVP_sm3(), null, evpKey) <= 0
       || EVP_DigestSignUpdate(mctx, data, data_size) <= 0
       || EVP_DigestSignFinal(mctx, sign, &signLen) <= 0) {
-    return null;
+    return string_empty;
   }
 
   //释放资源
@@ -325,7 +325,7 @@ std::string sm2Sign2ASN1HexString(unsigned char data[]) {
         params = OSSL_PARAM_BLD_to_param(param_bld);
     } else {
         LOGD("参数添加失败");
-        return null;
+        return string_empty;
     }
 
 
@@ -337,14 +337,14 @@ std::string sm2Sign2ASN1HexString(unsigned char data[]) {
         || EVP_PKEY_fromdata_init(ctx) <= 0
         || EVP_PKEY_fromdata(ctx, &evpKey, EVP_PKEY_KEYPAIR, params) <= 0) {
         LOGD("导入失败");
-        return null;
+        return string_empty;
     }
 
     ctx = EVP_PKEY_CTX_new(evpKey, null);
 
     if (!ctx || !evpKey) {
         LOGD("  创建失败");
-        return null;
+        return string_empty;
     }
 
     size_t data_size = strlen(reinterpret_cast<const char *const>(data));
@@ -361,7 +361,7 @@ std::string sm2Sign2ASN1HexString(unsigned char data[]) {
         || EVP_DigestSignInit(mctx, null, EVP_sm3(), null, evpKey) <= 0
         || EVP_DigestSignUpdate(mctx, data, data_size) <= 0
         || EVP_DigestSignFinal(mctx, sign, &signLen) <= 0) {
-        return null;
+        return string_empty;
     }
 
     //释放资源

@@ -1,12 +1,12 @@
 #include <jni.h>
 #include <string.h>
-#include <LogUtils.h>
-#include <CommonUtils.h>
-#include <sm/sm2_tools.h>
-#include "sm/sm4_tools.h"
-#include <sm/sm3_tools.h>
-#include <rsa_tools.h>
-#include <empty.h>
+#include <header/LogUtils.h>
+#include <header/CommonUtils.h>
+#include <header/sm/sm2_crypto.h>
+#include "header/sm/sm4_crypto.h"
+#include <header/sm/sm3_crypto.h>
+#include <header/rsa_crypto.h>
+#include <header/empty.h>
 #include <openssl/cmac.h>
 
 extern "C" JNIEXPORT void JNICALL

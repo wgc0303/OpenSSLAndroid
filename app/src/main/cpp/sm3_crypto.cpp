@@ -12,9 +12,9 @@
 
 #include <openssl/types.h>
 #include <openssl/evp.h>
-#include "sm/sm3_tools.h"
-#include "CommonUtils.h"
-#include <empty.h>
+#include "header/sm/sm3_crypto.h"
+#include "header/CommonUtils.h"
+#include <header/empty.h>
 #include <string.h>
 
 std::string sm3Digest(unsigned char msg[]) {

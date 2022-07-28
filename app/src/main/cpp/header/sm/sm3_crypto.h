@@ -10,12 +10,12 @@
  */
 
 
-#ifndef OPENSSL_ANDROID_SM3_TOOLS_H
-#define OPENSSL_ANDROID_SM3_TOOLS_H
+#ifndef OPENSSL_ANDROID_SM3_CRYPTO_H
+#define OPENSSL_ANDROID_SM3_CRYPTO_H
 
-#include <string>
-#include <jni.h>
+#include "string"
+#include "jni.h"
 
 std::string sm3Digest(unsigned char msg[]);
 
-#endif //OPENSSL_ANDROID_SM3_TOOLS_H
+#endif //OPENSSL_ANDROID_SM3_CRYPTO_H

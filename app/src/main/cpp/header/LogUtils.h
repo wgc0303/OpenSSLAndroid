@@ -10,8 +10,8 @@
  */
 
 
-#ifndef OPENSSL_ANDROID_LOGUTILS_H
-#define OPENSSL_ANDROID_LOGUTILS_H
+#ifndef OPENSSL_ANDROID_LOG_UTILS_H
+#define OPENSSL_ANDROID_LOG_UTILS_H
 
 #include <android/log.h>
 
@@ -29,4 +29,4 @@
 #define LOGE(...) NULL
 #endif
 
-#endif //OPENSSL_ANDROID_LOGUTILS_H
+#endif //OPENSSL_ANDROID_LOG_UTILS_H

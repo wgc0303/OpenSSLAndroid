@@ -3,7 +3,7 @@
 
 # Sets the minimum version of CMake required to build the native library.
 #cmake可编译的最小版本
-cmake_minimum_required(VERSION 3.4.0)
+cmake_minimum_required(VERSION 3.10.2)
 
 # Declares and names the project.
 
@@ -54,7 +54,7 @@ set_target_properties(
         # Specifies the parameter you want to define.
         PROPERTIES IMPORTED_LOCATION
         # Provides the path to the library you want to import.
-        ${CMAKE_SOURCE_DIR}/libs/${ANDROID_ABI}/libcrypto.a)
+        ${CMAKE_SOURCE_DIR}/libs/${CMAKE_ANDROID_ARCH_ABI}/libcrypto.a)
 
 add_library(# Sets the name of the library.
         openssl-ssl
@@ -68,7 +68,7 @@ set_target_properties(
         # Specifies the parameter you want to define.
         PROPERTIES IMPORTED_LOCATION
         # Provides the path to the library you want to import.
-        ${CMAKE_SOURCE_DIR}/libs/${ANDROID_ABI}/libssl.a)
+        ${CMAKE_SOURCE_DIR}/libs/${CMAKE_ANDROID_ARCH_ABI}/libssl.a)
 
 #查找android log库
 find_library( # Sets the name of the path variable.

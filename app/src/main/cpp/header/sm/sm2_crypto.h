@@ -10,11 +10,11 @@
  */
 
 
-#ifndef OPENSSL_ANDROID_SM2_TOOLS_H
-#define OPENSSL_ANDROID_SM2_TOOLS_H
+#ifndef OPENSSL_ANDROID_SM2_CRYPTO_H
+#define OPENSSL_ANDROID_SM2_CRYPTO_H
 
-#include <string>
-#include <jni.h>
+#include "string"
+#include "jni.h"
 
 std::string sm2encrypt2hexString(unsigned char content[]);
 
@@ -31,4 +31,4 @@ void privatePemKeyGenPublicKey(char *priKey);
 void priKeyHexGenPubKeyHex(char *priHex);
 
 
-#endif //OPENSSL_ANDROID_SM2_TOOLS_H
+#endif //OPENSSL_ANDROID_SM2_CRYPTO_H

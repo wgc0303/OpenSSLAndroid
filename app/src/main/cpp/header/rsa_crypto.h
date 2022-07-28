@@ -10,8 +10,8 @@
  */
 
 
-#ifndef OPENSSL_ANDROID_RSA_TOOLS_H
-#define OPENSSL_ANDROID_RSA_TOOLS_H
+#ifndef OPENSSL_ANDROID_RSA_CRYPTO_H
+#define OPENSSL_ANDROID_RSA_CRYPTO_H
 
 #include <string>
 
@@ -23,4 +23,4 @@ std::string rsaPrivateKeySign(unsigned char content[]);
 
 bool rsaPublicVerify(unsigned char content[], unsigned char sign[], size_t signLen);
 
-#endif //OPENSSL_ANDROID_RSA_TOOLS_H
+#endif //OPENSSL_ANDROID_RSA_CRYPTO_H

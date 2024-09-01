@@ -28,6 +28,7 @@ std::string arr2hex(const unsigned char *arr, size_t len);
 char *bio2Char(BIO *bio);
 
 int hexStrToByte(char *str, unsigned char *out, unsigned int *outLen);
+unsigned char *hex_to_bytes(const char *hex, size_t *out_len);
 
 #ifdef  __cplusplus
 }

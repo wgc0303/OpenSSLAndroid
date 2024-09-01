@@ -15,8 +15,56 @@
 
 #include "string"
 #include "jni.h"
+#include "openssl/asn1t.h"
+#include <openssl/ec.h>
+#include <openssl/evp.h>
+#include <openssl/ossl_typ.h>
+#include <vector>
+
+struct SM2Ciphertext {
+    BIGNUM *C1X;          // 椭圆曲线点x
+    BIGNUM *C1Y;          // 椭圆曲线点x
+    unsigned char *C3;  // 哈希值
+    unsigned char *C2;  // 加密数据
+    int C2Len;
+};
+
+struct SM2CiphertextASN1 {
+    ASN1_INTEGER *C1X;
+    ASN1_INTEGER *C1Y;
+    ASN1_OCTET_STRING *C3;
+    ASN1_OCTET_STRING *C2;
+};
+
+//// 定义 ASN.1 模板
+//ASN1_SEQUENCE(SM2CiphertextASN1) = {
+//        ASN1_SIMPLE(SM2CiphertextASN1, C1X, ASN1_INTEGER),
+//        ASN1_SIMPLE(SM2CiphertextASN1, C1Y, ASN1_INTEGER),
+//        ASN1_SIMPLE(SM2CiphertextASN1, C3, ASN1_OCTET_STRING),
+//        ASN1_SIMPLE(SM2CiphertextASN1, C2, ASN1_OCTET_STRING)
+//} ;
+////ASN1_SEQUENCE_END(SM2CiphertextASN1);
+////IMPLEMENT_ASN1_FUNCTIONS(SM2CiphertextASN1)
+
+//// 定义 ASN.1 模板
+//ASN1_SEQUENCE(SM2CiphertextASN1) = {
+//        ASN1_SIMPLE(SM2CiphertextASN1, C1X, ASN1_INTEGER),
+//        ASN1_SIMPLE(SM2CiphertextASN1, C1Y, ASN1_INTEGER),
+//        ASN1_SIMPLE(SM2CiphertextASN1, C3, ASN1_OCTET_STRING),
+//        ASN1_SIMPLE(SM2CiphertextASN1, C2, ASN1_OCTET_STRING)
+//}ASN1_SEQUENCE_END(SM2CiphertextASN1)
+//
+//IMPLEMENT_ASN1_FUNCTIONS(SM2CiphertextASN1)
+
 
 std::string sm2encrypt2hexString(unsigned char content[]);
+
+//sm2密文ASN.1转结构体
+SM2Ciphertext *sm2Ciphertext2Struct(const unsigned char **pp, long length);
+
+
+int sm2Struct2Ciphertext(BIGNUM *C1X, BIGNUM *C1Y, unsigned char *C3, unsigned char *C2,
+                                    int C2Len,unsigned char **sm2Der);
 
 std::string sm2decryptBuf2HexString(const unsigned char *enData, size_t enLen);
 

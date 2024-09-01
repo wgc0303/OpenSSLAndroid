@@ -99,4 +99,3 @@ int hexStrToByte(char *str, unsigned char *out, unsigned int *outLen) {
     if (outLen != null) *outLen = tmpLen / 2 + tmpLen % 2;
     return tmpLen / 2 + tmpLen % 2;
 }
-

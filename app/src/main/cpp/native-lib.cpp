@@ -22,6 +22,7 @@ Java_cn_wgc_openssl_MainActivity_jniSm2Encrypt2ASN1HexString(
     char *data = convertJByteArrayToChars(env, content);
     std::string enc = sm2encrypt2hexString(reinterpret_cast<unsigned char *>(data));
     free(data);
+
     return env->NewStringUTF(enc.c_str());
 }
 
@@ -32,21 +33,12 @@ Java_cn_wgc_openssl_MainActivity_jniSm2Encrypt2Struct(
         jobject /* this */,
         jbyteArray content) {
     char *data = convertJByteArrayToChars(env, content);
-    std::string enc = sm2encrypt2hexString(reinterpret_cast<unsigned char *>(data));
+    unsigned char *derChar = null;
+    int derLen = sm2encrypt(reinterpret_cast<unsigned char *>(data), &derChar);
     free(data);
-
     /*****转c1c2c3****/
-    char *derChar = (char *) malloc(strlen(enc.c_str()));
-    unsigned int derLen = 0;
-    hexStrToByte(const_cast<char *>(enc.c_str()), reinterpret_cast<unsigned char *>(derChar),
-                 &derLen);
     const unsigned char *der = reinterpret_cast<const unsigned char *>(derChar);
     SM2Ciphertext *strutCip = sm2Ciphertext2Struct(&der, derLen);
-
-//    //strut转der
-//    unsigned char *sm2Der = NULL;
-//    int sm2derLen = sm2Struct2Ciphertext(strutCip->C1X, strutCip->C1Y, strutCip->C3, strutCip->C2,
-//                                         strutCip->C2Len, sm2Der);
 
 //java的数据格式直接是04+c1+c2+c3
     std::string headHex = "04";
@@ -58,7 +50,6 @@ Java_cn_wgc_openssl_MainActivity_jniSm2Encrypt2Struct(
     std::string c1c2c3Hex = headHex.append(c1xHex).append(c1yHex).append(c2hex).append(
             c3hex).c_str();
     LOGD("c1c2c3:  %s", c1c2c3Hex.c_str());
-//    jbyteArray dstArray = hexString2jByteArray(env, c1c2c3Hex.c_str());
 /*****转c1c2c3****/
 
     OPENSSL_free(c1xHex);

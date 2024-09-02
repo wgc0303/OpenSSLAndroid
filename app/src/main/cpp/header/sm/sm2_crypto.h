@@ -36,35 +36,16 @@ struct SM2CiphertextASN1 {
     ASN1_OCTET_STRING *C2;
 };
 
-//// 定义 ASN.1 模板
-//ASN1_SEQUENCE(SM2CiphertextASN1) = {
-//        ASN1_SIMPLE(SM2CiphertextASN1, C1X, ASN1_INTEGER),
-//        ASN1_SIMPLE(SM2CiphertextASN1, C1Y, ASN1_INTEGER),
-//        ASN1_SIMPLE(SM2CiphertextASN1, C3, ASN1_OCTET_STRING),
-//        ASN1_SIMPLE(SM2CiphertextASN1, C2, ASN1_OCTET_STRING)
-//} ;
-////ASN1_SEQUENCE_END(SM2CiphertextASN1);
-////IMPLEMENT_ASN1_FUNCTIONS(SM2CiphertextASN1)
-
-//// 定义 ASN.1 模板
-//ASN1_SEQUENCE(SM2CiphertextASN1) = {
-//        ASN1_SIMPLE(SM2CiphertextASN1, C1X, ASN1_INTEGER),
-//        ASN1_SIMPLE(SM2CiphertextASN1, C1Y, ASN1_INTEGER),
-//        ASN1_SIMPLE(SM2CiphertextASN1, C3, ASN1_OCTET_STRING),
-//        ASN1_SIMPLE(SM2CiphertextASN1, C2, ASN1_OCTET_STRING)
-//}ASN1_SEQUENCE_END(SM2CiphertextASN1)
-//
-//IMPLEMENT_ASN1_FUNCTIONS(SM2CiphertextASN1)
-
-
 std::string sm2encrypt2hexString(unsigned char content[]);
+
+int sm2encrypt(unsigned char content[], unsigned char **der);
 
 //sm2密文ASN.1转结构体
 SM2Ciphertext *sm2Ciphertext2Struct(const unsigned char **pp, long length);
 
-
+//sm2密文ASN.1转结构体
 int sm2Struct2Ciphertext(BIGNUM *C1X, BIGNUM *C1Y, unsigned char *C3, unsigned char *C2,
-                                    int C2Len,unsigned char **sm2Der);
+                         int C2Len, unsigned char **sm2Der);
 
 std::string sm2decryptBuf2HexString(const unsigned char *enData, size_t enLen);
 

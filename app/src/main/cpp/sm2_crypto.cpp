@@ -28,8 +28,8 @@
 #include <memory>
 #include <iostream>
 
-//SM2签名ID
-#define SIGN_ID "123"
+//SM2签名ID,默认1234567812345678
+#define SIGN_ID "1234567812345678"
 
 //sm2私钥数据
 const unsigned char private_key_data[] = {
@@ -103,6 +103,32 @@ const char *private_pem = "-----BEGIN PRIVATE KEY-----\n"
  */
 std::string sm2encrypt2hexString(unsigned char content[]) {
 
+    unsigned char *out = null;
+    int outLen = sm2encrypt(reinterpret_cast<unsigned char *>(content), &out);
+    std::string encHexString = arr2hex(out, outLen);
+
+/*    //分段打印
+    size_t encHexStrLen = encHexString.size();
+    for (int i = 0; i < encHexStrLen; i += 1024) {
+        std::string s = encHexString.substr(i, i + 1024);
+        LOGD("%s", s.c_str());
+    }*/
+
+//    std::string text = sm2decryptBuf2HexString(out, out_len);
+//    LOGD("解密完成后数据     %s", text.c_str());
+
+    return encHexString;
+}
+
+
+/**
+ *
+ * @param content 原始字符数据
+ * @param der 加密后ASN.1编码的原始字节
+ * @return  加密后ASN.1编码后的长度
+ */
+int sm2encrypt(unsigned char content[], unsigned char **der) {
+
     EVP_PKEY_CTX *ctx;
     EVP_PKEY *evpKey = null;
     OSSL_PARAM_BLD *param_bld;
@@ -128,7 +154,7 @@ std::string sm2encrypt2hexString(unsigned char content[]) {
 
     else {
         LOGD("参数添加失败");
-        return string_empty;
+        return 0;
     }
 
     //下面这两种方式都行
@@ -139,20 +165,20 @@ std::string sm2encrypt2hexString(unsigned char content[]) {
         || EVP_PKEY_fromdata_init(ctx) <= 0
         || EVP_PKEY_fromdata(ctx, &evpKey, EVP_PKEY_KEYPAIR, params) <= 0) {
         LOGD("导入失败");
-        return string_empty;
+        return 0;
     }
 
     ctx = EVP_PKEY_CTX_new(evpKey, null);
     if (!ctx || !evpKey) {
         LOGD("  创建失败");
-        return string_empty;
+        return 0;
     }
 
     //除了sm2 其他的一些算法会失败
     int re = EVP_PKEY_encrypt_init(ctx);
     if (re != 1) {
         LOGD("  初始化失败");
-        return string_empty;
+        return 0;
     }
 
     size_t dataSize = strlen(reinterpret_cast<const char *const>(content));
@@ -171,13 +197,17 @@ std::string sm2encrypt2hexString(unsigned char content[]) {
     //计算加密后的为ASN.1编码的字节长度
     EVP_PKEY_encrypt(ctx, null, &outLen, content, dataSize);
 
-    unsigned char out[outLen];
-    memset(out, 0, sizeof(out));
+    *der = (unsigned char *) malloc(outLen);
+//    unsigned char *out[outLen];
+//    memset(out, 0, sizeof(out));
 
     //加密，数据为ASN.1数据
-    EVP_PKEY_encrypt(ctx, out, &outLen, content, dataSize);
+    int result = EVP_PKEY_encrypt(ctx, *der, &outLen, content, dataSize);
+    if (result != 1) {
+        return 0;
+    }
 
-    std::string encHexString = arr2hex(out, outLen);
+//    std::string encHexString = arr2hex(der, outLen);
 
 /*    //分段打印
     size_t encHexStrLen = encHexString.size();
@@ -195,7 +225,7 @@ std::string sm2encrypt2hexString(unsigned char content[]) {
     OSSL_PARAM_free(params);
     OSSL_PARAM_BLD_free(param_bld);
     CRYPTO_cleanup_all_ex_data();
-    return encHexString;
+    return outLen;
 }
 
 
@@ -251,7 +281,7 @@ SM2Ciphertext *sm2Ciphertext2Struct(const unsigned char **pp, long length) {
     }
     LOGD("C2：%s", arr2hex(ret->C2, ASN1_STRING_length(field->value.asn1_string)).c_str());
 
-    delete(seq);
+    delete (seq);
     *pp = p;
     return ret;
 }

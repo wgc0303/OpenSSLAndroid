@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
     private final String RSA_PUBLIC_KEY = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCq7pL6rR9L+l0WTuwEiiKn8cAvihWoIZCuU5yiH8GgXoJlsrmJyi736l0fQnv69MLsKwImalp/F0u+o9hw9HiY+72qkpjGZpwZYDYU509V4dv4IpyITWecAx1ELZHscV+BZ5HEZ73v4DESvJjzZ5rY7pN6cs4rbOPbnnaPpFFZzwIDAQAB";
     private final String RSA_PRIVATE_KEY = "MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBAKrukvqtH0v6XRZO7ASKIqfxwC+KFaghkK5TnKIfwaBegmWyuYnKLvfqXR9Ce" + "/r0wuwrAiZqWn8XS76j2HD0eJj7vaqSmMZmnBlgNhTnT1Xh2/ginIhNZ5wDHUQtkexxX4FnkcRnve/gMRK8mPNnmtjuk3pyzits49uedo+kUVnPAgMBAAECgYBP9x+MpVwcW8qbqp1QvFzdK8RImTVrfBRm8Ze34tpfD4e6UwPouc0CT0J0YtKEg2gDO1WcqimfBkN5ssYJhd06lEBqNYxhbJ0esj2g5PFrS399lvnDRE/OBoH0ZhPGZBcmH+Jotf5U6vJtWobHY5V3Ja1nuv1xBtdtg2GNKpiY+QJBAOLaGS/NPV2R53/qOlsFmNofdTt6RCL0tdPSTL9TigoI5eJDBPTJJx5oXpSqJL8NDLLtfmfJX4jThBxHlqVqsqcCQQDA5RVvDDAW4AJYoW3wC10TROqvzAPlnvqfVI+q7az7F2oivPsWkMeYEd7NiGomLF/0wRBKyNhL2QeqVkdgxUyZAkB5Fn23PFBzL7xoVPiNOXGbjIshEmRoXELqLCj3P3pBXPqIScnNd8m/u2ow5Jj0udx7bbW5ZI3wFSdBiRzqcwelAkEAh8Y4Cgw4JUHUJPKr4ZT+FLwjvU4LSCtZGaF55sSZR7w5du4yhrWt6Dpb66wjm28Ms8jZYOpyZSEEpj9IyrLVsQJBALSmIa7fFTsMManISpWMHlsVe1FeizoF6wJ6zf7Kx3xyVLjVmrEQe7u9KcsGMcOH2cWS6PquD8us4Og80LJgOv4=";
     private final String KV = "1234567812345678";
-    private final String SM2_SIGN_ID = "123";
+    private final String SM2_SIGN_ID = "1234567812345678";
     //    private String content = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWABCDEFGHIJKLMNOPQRSTUVWXYZA";
     private String content = "小镇三千年积累的天道反扑，我齐静春一肩挑之。天下非一人之天下，乃天下人之天下。";
 //    private String content = "abcdabcdabcdabcd5";
@@ -58,10 +58,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         tv = findViewById(R.id.sample_text);
-        byte[] bytes = ByteUtils.fromHexString("c1d22bbfdf0dc311a8fcbb86976418f8");
-        Log.d("wgc", "bytes size   " + bytes.length);
-
-        Log.d("wgc", "hex   " + ByteUtils.toHexString(bytes));
         //演示打印SM2密钥信息
         printSM2KeyData();
         // 演示RSA密钥对打印 N D  E

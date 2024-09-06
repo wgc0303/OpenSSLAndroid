@@ -43,12 +43,43 @@ Java_cn_wgc_openssl_MainActivity_jniSm2Encrypt2Struct(
 //java的数据格式直接是04+c1+c2+c3
     std::string headHex = "04";
     char *c1xHex = BN_bn2hex(strutCip->C1X);
+    //大数不够32字节，前面补0
+    int padding = 64 - strlen(c1xHex);
+    std::string c1xPadding="" ;
+    if(padding>0){
+        for (int i = 0; i < padding; i ++) {
+            c1xPadding=   c1xPadding.append("0");
+        }
+    }
+//
+//    std::string c1x ;
+//    std::string temp = "";
+//    if(strlen(c1xHex)==62){
+//        c1x = temp.append("00").append(c1xHex);
+//    }else{
+//        c1x = temp.append(c1xHex);
+//    }
     char *c1yHex = BN_bn2hex(strutCip->C1Y);
+    padding = 64 - strlen(c1yHex);
+    std::string c1yPadding="" ;
+    if(padding>0){
+        for (int i = 0; i < padding; i ++) {
+            c1yPadding =   c1yPadding.append("0");
+        }
+    }
+//    std::string c1y ;
+//    temp = "";
+//    if(strlen(c1yHex)==62){
+//        c1y = temp.append("00").append(c1yHex);
+//    }else{
+//        c1y = temp.append(c1yHex);
+//    }
     std::string c2hex = arr2hex(reinterpret_cast<const unsigned char *>(strutCip->C2),
                                 strutCip->C2Len).c_str();
     std::string c3hex = arr2hex(reinterpret_cast<const unsigned char *>(strutCip->C3), 32).c_str();
-    std::string c1c2c3Hex = headHex.append(c1xHex).append(c1yHex).append(c2hex).append(
-            c3hex).c_str();
+    std::string c1c2c3Hex = headHex.append(c1xPadding).append(c1xHex)
+            .append(c1yPadding) .append(c1yHex)
+            .append(c2hex).append(c3hex).c_str();
     LOGD("c1c2c3:  %s", c1c2c3Hex.c_str());
 /*****转c1c2c3****/
 
@@ -57,6 +88,54 @@ Java_cn_wgc_openssl_MainActivity_jniSm2Encrypt2Struct(
     BN_free(strutCip->C1X);
     BN_free(strutCip->C1Y);
     free(strutCip);
+    return env->NewStringUTF(c1c2c3Hex.c_str());
+}
+extern "C" JNIEXPORT jstring JNICALL
+Java_cn_wgc_openssl_MainActivity_sm2Ciphertext2Struct(
+        JNIEnv *env,
+        jobject /* this */,
+        jbyteArray content) {
+    char *derChar = convertJByteArrayToChars(env, content);
+    int derLen = env->GetArrayLength(content);
+
+    /*****转c1c2c3****/
+    const unsigned char *der = reinterpret_cast<const unsigned char *>(derChar);
+    SM2Ciphertext *strutCip = sm2Ciphertext2Struct(&der, derLen);
+
+    //java的数据格式直接是04+c1+c2+c3
+    std::string headHex = "04";
+    char *c1xHex = BN_bn2hex(strutCip->C1X);
+    //大数不够32字节，前面补0
+    int padding = 64 - strlen(c1xHex);
+    std::string c1xPadding="" ;
+    if(padding>0){
+        for (int i = 0; i < padding; i ++) {
+            c1xPadding=   c1xPadding.append("0");
+        }
+    }
+    char *c1yHex = BN_bn2hex(strutCip->C1Y);
+    padding = 64 - strlen(c1yHex);
+    std::string c1yPadding="" ;
+    if(padding>0){
+        for (int i = 0; i < padding; i ++) {
+            c1yPadding =   c1yPadding.append("0");
+        }
+    }
+    std::string c2hex = arr2hex(reinterpret_cast<const unsigned char *>(strutCip->C2),
+                                strutCip->C2Len).c_str();
+    std::string c3hex = arr2hex(reinterpret_cast<const unsigned char *>(strutCip->C3), 32).c_str();
+    std::string c1c2c3Hex = headHex.append(c1xPadding).append(c1xHex)
+            .append(c1yPadding) .append(c1yHex)
+            .append(c2hex).append(c3hex).c_str();
+    LOGD("jni c1c2c3:  %s", c1c2c3Hex.c_str());
+/*****转c1c2c3****/
+
+    OPENSSL_free(c1xHex);
+    OPENSSL_free(c1yHex);
+    BN_free(strutCip->C1X);
+    BN_free(strutCip->C1Y);
+    free(strutCip);
+    free(derChar);
     return env->NewStringUTF(c1c2c3Hex.c_str());
 }
 

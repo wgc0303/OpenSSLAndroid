@@ -74,11 +74,36 @@ public class MainActivity extends AppCompatActivity {
             rsaJavaEncAndJniDec();
             rsaJniSignAndJavaVerify();
             rsaJavaSignAndJniVerify();
-            String c1c2c3 = jniSm2Encrypt2Struct(content.getBytes());
-            Log.d("wgc", "c1c2c3   " + c1c2c3);
-            String asn1=  jniStruct2ASN1(ByteUtils.fromHexString(c1c2c3));
-            Log.d("wgc", "asn1   " + asn1);
         }));
+
+        new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                while (true) {
+                    String c1c2c3 = jniSm2Encrypt2Struct(content.getBytes());
+                    Log.d("wgc", "c1c2c3   " + c1c2c3);
+                    String asn1 = jniStruct2ASN1(ByteUtils.fromHexString(c1c2c3));
+                    Log.d("wgc", "asn1   " + asn1);
+                    String hex = jniSm2DecryptASN12HexString(ByteUtils.fromHexString(asn1));
+                    Log.d("wgc", "解密后数据：     " + new String(ByteUtils.fromHexString(hex)));
+
+//                    String jniEecASN1HexString = jniSm2Encrypt2ASN1HexString(content.getBytes());
+//                    byte[] encASN1HexBytes = ByteUtils.fromHexString(jniEecASN1HexString);
+//                    String  jnic1c2c3= sm2Ciphertext2Struct(encASN1HexBytes);
+//                    byte[] bytes = SM2ASN1Parse.c1c3c2DerConvert2c1c2c3(encASN1HexBytes);
+//                    String javac1c2c3c1c2c3 = ByteUtils.toHexString(bytes).toUpperCase();
+//                    Log.d("wgc", "java c1c2c3:  " + javac1c2c3c1c2c3);
+//                    Log.d("wgc", "c1c2c3比对结果:  " + jnic1c2c3.equals(javac1c2c3c1c2c3));
+                    try {
+                        Thread.sleep(50L);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                }
+            }
+        }.start();
 
         findViewById(R.id.generateSm2KeyPair).setOnClickListener(v -> jniGenerateSm2KeyPair());
 
@@ -89,6 +114,8 @@ public class MainActivity extends AppCompatActivity {
     public synchronized native String jniSm2Encrypt2ASN1HexString(byte[] content);
 
     public synchronized native String jniSm2Encrypt2Struct(byte[] content);
+
+    public synchronized native String sm2Ciphertext2Struct(byte[] content);
 
     public synchronized native String jniStruct2ASN1(byte[] content);
 

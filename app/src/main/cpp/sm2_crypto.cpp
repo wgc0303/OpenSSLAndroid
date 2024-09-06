@@ -281,7 +281,6 @@ SM2Ciphertext *sm2Ciphertext2Struct(const unsigned char **pp, long length) {
     }
     LOGD("C2：%s", arr2hex(ret->C2, ASN1_STRING_length(field->value.asn1_string)).c_str());
 
-    delete (seq);
     *pp = p;
     return ret;
 }

@@ -8,12 +8,14 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
+import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.crypto.engines.SM2Engine;
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
 import org.bouncycastle.crypto.params.ECPublicKeyParameters;
 import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.interfaces.RSAPrivateKey;
@@ -46,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
     private final String KV = "1234567812345678";
     private final String SM2_SIGN_ID = "1234567812345678";
     //    private String content = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWABCDEFGHIJKLMNOPQRSTUVWXYZA";
-    private String content = "小镇三千年积累的天道反扑，我齐静春一肩挑之。天下非一人之天下，乃天下人之天下。";
+    private String content = "小镇三千年积累的天道反扑，我齐静春一肩挑之。天下非一人之天下，乃天下人之天下。小齐江湖没有什么好的，就陆芝的腿还行";
 //    private String content = "abcdabcdabcdabcd5";
 
     private TextView tv;
@@ -74,36 +76,25 @@ public class MainActivity extends AppCompatActivity {
             rsaJavaEncAndJniDec();
             rsaJniSignAndJavaVerify();
             rsaJavaSignAndJniVerify();
+            jniAns1ConvertC1c2c3();
         }));
 
-        new Thread() {
-            @Override
-            public void run() {
-                super.run();
-                while (true) {
-                    String c1c2c3 = jniSm2Encrypt2Struct(content.getBytes());
-                    Log.d("wgc", "c1c2c3   " + c1c2c3);
-                    String asn1 = jniStruct2ASN1(ByteUtils.fromHexString(c1c2c3));
-                    Log.d("wgc", "asn1   " + asn1);
-                    String hex = jniSm2DecryptASN12HexString(ByteUtils.fromHexString(asn1));
-                    Log.d("wgc", "解密后数据：     " + new String(ByteUtils.fromHexString(hex)));
-
-//                    String jniEecASN1HexString = jniSm2Encrypt2ASN1HexString(content.getBytes());
-//                    byte[] encASN1HexBytes = ByteUtils.fromHexString(jniEecASN1HexString);
-//                    String  jnic1c2c3= sm2Ciphertext2Struct(encASN1HexBytes);
-//                    byte[] bytes = SM2ASN1Parse.c1c3c2DerConvert2c1c2c3(encASN1HexBytes);
-//                    String javac1c2c3c1c2c3 = ByteUtils.toHexString(bytes).toUpperCase();
-//                    Log.d("wgc", "java c1c2c3:  " + javac1c2c3c1c2c3);
-//                    Log.d("wgc", "c1c2c3比对结果:  " + jnic1c2c3.equals(javac1c2c3c1c2c3));
-                    try {
-                        Thread.sleep(50L);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-
-                }
-            }
-        }.start();
+//        new Thread() {
+//            @Override
+//            public void run() {
+//                super.run();
+//                while (true) {
+//
+//                    jniAns1ConvertC1c2c3();
+//                    try {
+//                        Thread.sleep(50L);
+//                    } catch (InterruptedException e) {
+//                        throw new RuntimeException(e);
+//                    }
+//
+//                }
+//            }
+//        }.start();
 
         findViewById(R.id.generateSm2KeyPair).setOnClickListener(v -> jniGenerateSm2KeyPair());
 
@@ -170,6 +161,7 @@ public class MainActivity extends AppCompatActivity {
 
             byte[] encData = SM2Util.c1c3c2DerConvert2c1c2c3(encASN1HexBytes);
 
+            Log.d("wgc", "JAVA ASN1 " +ByteUtils.toHexString(encData));
             ECPrivateKeyParameters priKey = new ECPrivateKeyParameters(new BigInteger(ByteUtils.fromHexString(priHex)), SM2Util.DOMAIN_PARAMS);
 
             long l1 = System.currentTimeMillis();
@@ -346,6 +338,23 @@ public class MainActivity extends AppCompatActivity {
 //        String pemSm2Pub = "MFowFAYIKoEcz1UBgi0GCCqBHM9VAYItA0IABIauX4TCjC8jdn/vPQbAANOnj0VmGdbauCIxzdlzOJSuk9SrkywWBTngiSGHl/nHYkmBiABmXuogk600lnz41V8=";
 //        byte[] sm2Pub = Base64.decode(pemSm2Pub, Base64.NO_WRAP);
 //        TestUtil.printHexString2Array(ByteUtils.toHexString(sm2Pub));
+    }
+
+
+    private void jniAns1ConvertC1c2c3(){
+        String c1c2c3 = jniSm2Encrypt2Struct(content.getBytes());
+        Log.d("wgc", "c1c2c3   " + c1c2c3);
+        try {
+            ECPrivateKeyParameters priKey = new ECPrivateKeyParameters(new BigInteger(ByteUtils.fromHexString(priHex)), SM2Util.DOMAIN_PARAMS);
+            byte[] decryptData = SM2Util.decrypt(SM2Engine.Mode.C1C2C3, priKey, ByteUtils.fromHexString(c1c2c3));
+            Log.d("wgc", "JAVA解密后数据：     " + new String(decryptData));
+        } catch (InvalidCipherTextException e) {
+            throw new RuntimeException(e);
+        }
+        String asn1 = jniStruct2ASN1(ByteUtils.fromHexString(c1c2c3));
+        Log.d("wgc", "asn1   " + asn1);
+        String hex = jniSm2DecryptASN12HexString(ByteUtils.fromHexString(asn1));
+        Log.d("wgc", "JNI 解密后数据：     " + new String(ByteUtils.fromHexString(hex)));
     }
 
 

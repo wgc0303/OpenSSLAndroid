@@ -79,22 +79,21 @@ public class MainActivity extends AppCompatActivity {
             jniAns1ConvertC1c2c3();
         }));
 
-//        new Thread() {
-//            @Override
-//            public void run() {
-//                super.run();
-//                while (true) {
-//
-//                    jniAns1ConvertC1c2c3();
-//                    try {
-//                        Thread.sleep(50L);
-//                    } catch (InterruptedException e) {
-//                        throw new RuntimeException(e);
-//                    }
-//
-//                }
-//            }
-//        }.start();
+        new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                while (true) {
+                    jniAns1ConvertC1c2c3();
+                    try {
+                        Thread.sleep(50L);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                }
+            }
+        }.start();
 
         findViewById(R.id.generateSm2KeyPair).setOnClickListener(v -> jniGenerateSm2KeyPair());
 
